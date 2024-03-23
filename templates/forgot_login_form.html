@@ -6,7 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Login to P1 Private School of Education</h1>
+    <h1>Forgot Login</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -18,15 +18,12 @@
         {% endif %}
     {% endwith %}
 
-
-    <form method="post" action="/login">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" />
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" />
-        <button type="submit">Login</button>
-        <a href="/add">Create User</a>
-        <a href="/forgotlogin">Forgot Login</a>
+    <form method="post" action="/forgotlogin">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br>
+        <input type="submit" value="Submit">
     </form>
 </body>
 </html>

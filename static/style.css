@@ -70,3 +70,32 @@ thead {
     background-color: #007bff;
     color: white;
 } */
+
+
+#news-container {
+    margin-top: 20px;
+}
+
+.news-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.news-item h3 {
+    margin-top: 0;
+}
+
+.news-item p {
+    color: #555;
+}
+
+.news-item a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.news-item a:hover {
+    text-decoration: underline;
+}

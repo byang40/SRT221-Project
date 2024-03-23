@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Course Information</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Course Name</th>
+                <th>Description</th>
+                <th>Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courses %}
+            <tr>
+                <td>{{ course[0] }}</td>
+                <td>{{ course[1] }}</td>
+                <td>{{ course[2] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <th><a href="/enroll">Enroll</a></th>
+</body>
+</html>
