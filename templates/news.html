@@ -6,13 +6,29 @@
     <title>Latest News - P1 Private School of Education</title>
 </head>
 <body>
-    <h1>News</h1>
+    <h1>Welcome to P1 Private School of Education</h1>
+    <table>
+        <thead>
+            <tr>
+                <th><a href="/">Home</a></th>
+                <th><a href="/news">News</a></th>
+                <th><a href="/courses">Courses</a></th>
+                <th><a href="/profile">Profile</a></th>
+                <th><a href="/contacts">Contacts</a></th>
+            </tr>
+        </thead>
+    </table>
+    <h2>News</h2>
     {% for article in articles %}
         <h2><a href="/article/{{ article.id }}">{{ article.title }}</a></h2>
         <p>Published on: {{ article.publication_date }}</p>
         <!-- Truncate content for preview -->
         <p>{{ article.content[:150] }}...</p>
     {% endfor %}
-    <a href="/add_article">Add a New Article</a>
+
+    {% if logged_in_user %}
+        <a href="/add_article">Add a New Article</a>
+    {% endif %}
+
 </body>
 </html>

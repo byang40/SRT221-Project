@@ -24,7 +24,12 @@ def home():
         cursor.close()
         if user:
             logged_in_user = {'username': user[1]}
-    return render_template('home.html', logged_in_user=logged_in_user)
+        cursor.close()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT idarticles, title, content, publication_date FROM articles ORDER BY publication_date DESC LIMIT 3")
+    latest_articles = cursor.fetchall()
+    cursor.close()
+    return render_template('home.html', logged_in_user=logged_in_user, latest_articles=latest_articles)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -35,7 +40,7 @@ def login():
         cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password,))
         user = cursor.fetchone()
         cursor.close()
-        # conn.close()
+        conn.close()
         if user:
             session['username'] = username
             flash('You were successfully logged in.', 'success')
@@ -95,7 +100,8 @@ def news():
             'publication_date': article[3]
         })
     cursor.close()
-    return render_template('news.html', articles=articles_list)
+    logged_in_user = 'username' in session
+    return render_template('news.html', articles=articles_list, logged_in_user=logged_in_user)
 
 @app.route('/add_article', methods=['GET', 'POST'])
 def add_article():
@@ -121,47 +127,16 @@ def article(article_id):
             conn.commit()
             cursor.close()
         else:
-            # If not logged in, flash a message and redirect to login page
             flash('You must be logged in to post a comment.', 'warning')
             return redirect(url_for('login'))
-    # Retrieve the article and its comments from the database
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM articles WHERE idarticles = %s", (article_id,))
     article = cursor.fetchone()
     cursor.execute("SELECT author_name, comment, comment_date FROM comments WHERE article_id = %s ORDER BY comment_date DESC", (article_id,))
     comments = cursor.fetchall()
-    conn.commit()
     cursor.close()
-    return render_template('article.html', article=article, comments=comments)
-
-# @app.route('/view')
-# def view_users():
-#     cursor=conn.cursor()
-#     cursor.execute("select * from users")
-#     users=cursor.fetchall()
-#     return render_template('view_users.html',users=users)
-
-# @app.route('/delete/<int:id>',methods=['GET'])
-# def delete_user(id):
-#     cursor=conn.cursor()
-#     cursor.execute('DELETE from users where id=%s',(id,))
-#     conn.commit()
-#     return redirect(url_for('view_users'))
-
-# @app.route('/update/<int:id>', methods=['GET','POST'])
-# def update_user(id):
-#     cursor=conn.cursor()
-#     if request.method=='POST':
-#         name=request.form['name']
-#         address=request.form['address']
-#         email=request.form['email']
-#         mobile=request.form['mobile']
-#         cursor.execute('UPDATE users set name=%s, address=%s, email=%s, mobile=%s where id=%s',(name,address,email,mobile,id))
-#         conn.commit()
-#         return redirect(url_for('view_users'))
-#     cursor.execute('select * from users where id=%s',(id,))
-#     user=cursor.fetchone()
-#     return render_template('update_user.html',user=user)
+    print(comments)  # Debug print to check the structure of comments
+    return render_template('article_detail.html', article=article, comments=comments)
 
 @app.route('/contacts')
 def contacts():
@@ -180,6 +155,13 @@ def profile():
     selected_courses = cursor.fetchall()
     total_cost = len(selected_courses) * 2000
     return render_template('profile.html', user_details=user_details, selected_courses=selected_courses, total_cost=total_cost)
+
+@app.route('/courses')
+def courses():
+    cursor = conn.cursor()
+    cursor.execute("SELECT coursename, coursedescription, coursecost FROM courses")
+    courses = cursor.fetchall()
+    return render_template('courses.html', courses=courses)
 
 @app.route('/enroll', methods=['GET', 'POST'])
 def enroll():
@@ -212,13 +194,6 @@ def enroll():
         courses = cursor.fetchall()
         return render_template('enroll.html', courses=courses)
 
-@app.route('/courses')
-def courses():
-    cursor = conn.cursor()
-    cursor.execute("SELECT coursename, coursedescription, coursecost FROM courses")
-    courses = cursor.fetchall()
-    return render_template('courses.html', courses=courses)
-
 @app.route('/confirmation', methods=['GET', 'POST'])
 def confirmation():
     if 'username' not in session:
@@ -245,14 +220,12 @@ def confirmation():
     else:
         cursor.execute("SELECT selectioncourse FROM courseselection WHERE user_id = %s", (user_id,))
         selected_courses = cursor.fetchall()
-
         total_cost = 0
         for course_name in selected_courses:
             cursor.execute("SELECT coursecost FROM courses WHERE coursename = %s", (course_name[0],))
             cost = cursor.fetchone()
             if cost:
                 total_cost += cost[0]
-
         return render_template('confirmation.html', selected_courses=selected_courses, total_cost=total_cost)
 
 if __name__=='__main__':

@@ -6,7 +6,14 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Login to P1 Private School of Education</h1>
+    <h1>Welcome to P1 Private School of Education</h1>
+    <table>
+        <th><a href="/">Home</a></th>
+        <th><a href="/news">News</a></th>
+        <th><a href="/courses">Courses</a></th>
+        <th><a href="/profile">Profile</a></th>
+        <th><a href="/contacts">Contacts</a></th>
+    </table>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

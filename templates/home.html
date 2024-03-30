@@ -40,31 +40,34 @@
         </thead>
     </table>
     
+    <!-- {% if latest_articles %}
+        <div id="latest-articles">
+            <h2>Latest Articles</h2>
+            {% for article in latest_articles %}
+                <div class="article-preview">
+                    <h3><a href="/article/{{ article.id }}">{{ article.title }}</a></h3>
+                    <p>{{ article.content[:150] }}...</p>  <!-- Showing a snippet of the content -->
+                    <!-- <p>Published on: {{ article.publication_date }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %} -->
+
     <div id="news-container">
         <h2>Latest News</h2>
-        <div class="news-item">
-            <h3>New Courses for 2024</h3>
-            <p>
-                In 2024, P1 Private School of Education is thrilled to unveil a fresh array of courses designed to equip students with cutting-edge skills and knowledge. These courses have been developed to meet the evolving educational needs of our students, incorporating contemporary topics and innovative teaching methodologies. The aim is to provide a diverse selection of subjects that cater to various interests and career aspirations, fostering a holistic learning environment.
-            </p>
-            <h3>Upcoming Courses:</h3>
-            <ul>
-                <li>
-                    <strong>Artificial Intelligence and Machine Learning:</strong> Delve into the world of AI and machine learning, exploring the foundations of neural networks, natural language processing, and robotics.
-                </li>
-                <li>
-                    <strong>Sustainable Urban Planning:</strong> An interdisciplinary course focusing on sustainable development, eco-friendly infrastructure, and the creation of green spaces within urban settings.
-                </li>
-                <li>
-                    <strong>Virtual Reality and Game Design:</strong> A hands-on course where students learn the principles of VR environments and game design, including 3D modeling and user experience.
-                </li>
-                <li>
-                    <strong>Digital Marketing and Social Media:</strong> Covering the latest trends in digital marketing strategies, SEO, and the impactful use of social media for branding and community engagement.
-                </li>
-            </ul>
-            <a href="/news">Read more</a>
-        </div>
+        {% for article in latest_articles %}
+            <div class="news-item">
+                <h3><a href="/article/{{ article.idarticles }}">{{ article.title }}</a></h3>
+                <p>{{ article.content[:200] }}... <a href="/article/{{ article.idarticles }}">Read more</a></p>
+                <!-- The following is a simplified display. You can add more complexity as needed. -->
+            </div>
+        {% else %}
+            <div class="news-item">
+                <p>No recent articles found.</p>
+            </div>
+        {% endfor %}
     </div>
+    
 
 </body>
 </html>

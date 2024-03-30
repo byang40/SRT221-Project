@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ article.title }}</title>
+    <title>Document</title>
 </head>
 <body>
     <h1>Welcome to P1 Private School of Education</h1>
@@ -15,24 +15,28 @@
         <th><a href="/contacts">Contacts</a></th>
     </table>
     <h2>{{ article.title }}</h2>
-    <p>Published on: {{ article.publication_date }} </p>
+    <p>Published on: {{ article.publication_date }}</p>
     <p>{{ article.content }}</p>
     <hr>
     <h2>Comments</h2>
     {% if comments %}
         {% for comment in comments %}
-            <p><strong>{{ comment.author_name }}</strong> commented on {{ comment.comment_date }}</p>
-            <p>{{ comment.comment }}</p>
+            <div class="comment">
+                <strong>{{ comment.author_name }}</strong> commented on {{ comment.comment_date }}
+                <p>{{ comment.comment }}</p>
+            </div>
         {% endfor %}
     {% else %}
         <p>No comments yet.</p>
     {% endif %}
     
-    <h3>Add a Comment</h3>
-    <form action="" method="post">
-        <label for="comment">Comment:</label><br>
-        <textarea id="comment" name="comment" required></textarea><br>
-        <input type="submit" value="Submit Comment">
-    </form>
+    {% if 'username' in session %}
+        <h3>Add a Comment</h3>
+        <form action="" method="post">
+            <label for="comment">Comment:</label><br>
+            <textarea id="comment" name="comment" required></textarea><br>
+            <input type="submit" value="Submit Comment">
+        </form>
+    {% endif %}
 </body>
 </html>
