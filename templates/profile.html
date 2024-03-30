@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+</head>
+<body>
+    <h1>User Profile</h1>
+    {% if user_details %}
+        <p>Name: {{ user_details[1] }}</p>
+        <p>Address: {{ user_details[2] }}</p>
+        <p>Email: {{ user_details[3] }}</p>
+        <p>Mobile: {{ user_details[4] }}</p>
+    {% endif %}
+    <h2>Selected Courses</h2>
+    {% if selected_courses %}
+        <ul>
+            {% for course in selected_courses %}
+                <li>{{ course[0] }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No courses selected.</p>
+    {% endif %}
+    <h2>Total Cost for Courses</h2>
+    <p>Total Cost: ${{ total_cost }}</p>
+</body>
+</html>

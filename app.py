@@ -81,6 +81,59 @@ def add_user():
         return redirect(url_for('home',message='User Created Successfully!'))
     return render_template('add_user.html')
 
+@app.route('/news')
+def news():
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM articles ORDER BY publication_date DESC")
+    articles = cursor.fetchall()
+    articles_list = []
+    for article in articles:
+        articles_list.append({
+            'id': article[0],
+            'title': article[1],
+            'content': article[2],
+            'publication_date': article[3]
+        })
+    cursor.close()
+    return render_template('news.html', articles=articles_list)
+
+@app.route('/add_article', methods=['GET', 'POST'])
+def add_article():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO articles (title, content) VALUES (%s, %s)", (title, content))
+        conn.commit()
+        cursor.close()
+        return redirect(url_for('news'))
+    return render_template('add_article.html')
+
+@app.route('/article/<int:article_id>', methods=['GET', 'POST'])
+def article(article_id):
+    if request.method == 'POST':
+        # Check if the user is logged in
+        if 'username' in session:
+            comment = request.form['comment']
+            author_name = session.get('username')
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO comments (article_id, author_name, comment) VALUES (%s, %s, %s)", (article_id, author_name, comment))
+            conn.commit()
+            cursor.close()
+        else:
+            # If not logged in, flash a message and redirect to login page
+            flash('You must be logged in to post a comment.', 'warning')
+            return redirect(url_for('login'))
+    # Retrieve the article and its comments from the database
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM articles WHERE idarticles = %s", (article_id,))
+    article = cursor.fetchone()
+    cursor.execute("SELECT author_name, comment, comment_date FROM comments WHERE article_id = %s ORDER BY comment_date DESC", (article_id,))
+    comments = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    return render_template('article.html', article=article, comments=comments)
+
 # @app.route('/view')
 # def view_users():
 #     cursor=conn.cursor()
@@ -114,44 +167,44 @@ def add_user():
 def contacts():
     return render_template('contacts.html')
 
-# @app.route('/enroll', methods=['GET', 'POST'])
-# def enroll():
-#     cursor = conn.cursor()
-#     if request.method == 'POST':
-#         selected_courses = request.form.getlist('selected_courses')
-#         if not selected_courses:
-#             return render_template('enroll.html', courses=courses, error="Please select at least one course.")
-#         for course_name in selected_courses:
-#             cursor.execute("SELECT * FROM courseselection WHERE selectioncourse = %s", (course_name,))
-#             if cursor.fetchone() is None:
-#                 cursor.execute("INSERT INTO courseselection (selectioncourse) VALUES (%s)", (course_name,))
-#         conn.commit()
-#         return redirect(url_for('confirmation'))
-#     else:
-#         cursor.execute("SELECT coursename FROM courses")
-#         courses = cursor.fetchall()
-#         return render_template('enroll.html', courses=courses)
+@app.route('/profile')
+def profile():
+    if 'username' not in session:
+        flash('Please login to view your profile.', 'error')
+        return redirect(url_for('login'))
+    username = session['username']
+    cursor = conn.cursor()
+    cursor.execute("SELECT idusers, name, address, email, mobile FROM users WHERE username = %s", (username,))
+    user_details = cursor.fetchone()
+    cursor.execute("SELECT selectioncourse FROM courseselection WHERE user_id = %s", (user_details[0],))
+    selected_courses = cursor.fetchall()
+    total_cost = len(selected_courses) * 2000
+    return render_template('profile.html', user_details=user_details, selected_courses=selected_courses, total_cost=total_cost)
 
 @app.route('/enroll', methods=['GET', 'POST'])
 def enroll():
     if 'username' not in session:
         flash('Please login to enroll in courses', 'error')
         return redirect(url_for('login'))
-    
     cursor = conn.cursor()
     if request.method == 'POST':
         username = session['username']
         cursor.execute("SELECT idusers FROM users WHERE username = %s", (username,))
-        user_id = cursor.fetchone()[0]  # Retrieve user ID
-        
+        user_id_result = cursor.fetchone()
+        if not user_id_result:
+            flash('Error: User not found. Please try logging in again.', 'error')
+            return redirect(url_for('login'))
+        user_id = user_id_result[0]
         selected_courses = request.form.getlist('selected_courses')
         if not selected_courses:
             flash("Please select at least one course.", "error")
             return redirect(url_for('courses'))
-        
         for course_name in selected_courses:
-            cursor.execute("INSERT INTO courseselection (selectioncourse, user_id) VALUES (%s, %s)", (course_name, user_id))
-        
+            cursor.execute("SELECT * FROM courseselection WHERE user_id = %s AND selectioncourse = %s", (user_id, course_name))
+            if cursor.fetchone() is None:
+                cursor.execute("INSERT INTO courseselection (selectioncourse, user_id) VALUES (%s, %s)", (course_name, user_id))
+            else:
+                flash(f"You are already enrolled in {course_name}.", "info")
         conn.commit()
         return redirect(url_for('confirmation'))
     else:
@@ -166,64 +219,30 @@ def courses():
     courses = cursor.fetchall()
     return render_template('courses.html', courses=courses)
 
-# @app.route('/confirmation', methods=['GET', 'POST'])
-# def confirmation():
-#     cursor = conn.cursor()
-#     if request.method == 'POST':
-#         if 'delete' in request.form:
-#             course_to_delete = request.form['delete']
-#             cursor.execute("DELETE FROM courseselection WHERE selectioncourse = %s", (course_to_delete,))
-#             conn.commit()
-#         elif 'add' in request.form:
-#             course_to_add = request.form['add']
-#             cursor.execute("INSERT INTO courseselection (selectioncourse) VALUES (%s)", (course_to_add,))
-#             conn.commit()
-#         return redirect(url_for('confirmation'))
-#     else:
-#         cursor.execute("SELECT selectioncourse FROM courseselection")
-#         selected_courses = cursor.fetchall()
-#         total_cost = 0
-#         for course_name in selected_courses:
-#             cursor.execute("SELECT coursecost FROM courses WHERE coursename = %s", (course_name[0],))
-#             cost = cursor.fetchone()
-#             if cost:
-#                 total_cost += cost[0]
-#         return render_template('confirmation.html', selected_courses=selected_courses, total_cost=total_cost)
-
 @app.route('/confirmation', methods=['GET', 'POST'])
 def confirmation():
     if 'username' not in session:
         flash('Please login to view your course confirmation.', 'error')
         return redirect(url_for('login'))
-
     username = session['username']
     cursor = conn.cursor()
-
-    # Retrieve user ID based on the username stored in session
     cursor.execute("SELECT idusers FROM users WHERE username = %s", (username,))
     user_id_result = cursor.fetchone()
-    
-    # If user is not found, redirect to login
     if not user_id_result:
         flash('User not found. Please login again.', 'error')
         return redirect(url_for('login'))
-    
     user_id = user_id_result[0]
-
     if request.method == 'POST':
         if 'delete' in request.form:
             course_to_delete = request.form['delete']
-            # Ensure that the course being deleted belongs to the logged-in user
             cursor.execute("DELETE FROM courseselection WHERE selectioncourse = %s AND user_id = %s", (course_to_delete, user_id))
             conn.commit()
         elif 'add' in request.form:
             course_to_add = request.form['add']
-            # Insert the new course with the user_id of the logged-in user
             cursor.execute("INSERT INTO courseselection (selectioncourse, user_id) VALUES (%s, %s)", (course_to_add, user_id))
             conn.commit()
         return redirect(url_for('confirmation'))
     else:
-        # Select only the courses that the logged-in user has enrolled in
         cursor.execute("SELECT selectioncourse FROM courseselection WHERE user_id = %s", (user_id,))
         selected_courses = cursor.fetchall()
 
@@ -235,7 +254,6 @@ def confirmation():
                 total_cost += cost[0]
 
         return render_template('confirmation.html', selected_courses=selected_courses, total_cost=total_cost)
-
 
 if __name__=='__main__':
     app.run(debug=True)
