@@ -114,17 +114,44 @@ def add_user():
 def contacts():
     return render_template('contacts.html')
 
+# @app.route('/enroll', methods=['GET', 'POST'])
+# def enroll():
+#     cursor = conn.cursor()
+#     if request.method == 'POST':
+#         selected_courses = request.form.getlist('selected_courses')
+#         if not selected_courses:
+#             return render_template('enroll.html', courses=courses, error="Please select at least one course.")
+#         for course_name in selected_courses:
+#             cursor.execute("SELECT * FROM courseselection WHERE selectioncourse = %s", (course_name,))
+#             if cursor.fetchone() is None:
+#                 cursor.execute("INSERT INTO courseselection (selectioncourse) VALUES (%s)", (course_name,))
+#         conn.commit()
+#         return redirect(url_for('confirmation'))
+#     else:
+#         cursor.execute("SELECT coursename FROM courses")
+#         courses = cursor.fetchall()
+#         return render_template('enroll.html', courses=courses)
+
 @app.route('/enroll', methods=['GET', 'POST'])
 def enroll():
+    if 'username' not in session:
+        flash('Please login to enroll in courses', 'error')
+        return redirect(url_for('login'))
+    
     cursor = conn.cursor()
     if request.method == 'POST':
+        username = session['username']
+        cursor.execute("SELECT idusers FROM users WHERE username = %s", (username,))
+        user_id = cursor.fetchone()[0]  # Retrieve user ID
+        
         selected_courses = request.form.getlist('selected_courses')
         if not selected_courses:
-            return render_template('enroll.html', courses=courses, error="Please select at least one course.")
+            flash("Please select at least one course.", "error")
+            return redirect(url_for('courses'))
+        
         for course_name in selected_courses:
-            cursor.execute("SELECT * FROM courseselection WHERE selectioncourse = %s", (course_name,))
-            if cursor.fetchone() is None:
-                cursor.execute("INSERT INTO courseselection (selectioncourse) VALUES (%s)", (course_name,))
+            cursor.execute("INSERT INTO courseselection (selectioncourse, user_id) VALUES (%s, %s)", (course_name, user_id))
+        
         conn.commit()
         return redirect(url_for('confirmation'))
     else:
@@ -139,29 +166,76 @@ def courses():
     courses = cursor.fetchall()
     return render_template('courses.html', courses=courses)
 
+# @app.route('/confirmation', methods=['GET', 'POST'])
+# def confirmation():
+#     cursor = conn.cursor()
+#     if request.method == 'POST':
+#         if 'delete' in request.form:
+#             course_to_delete = request.form['delete']
+#             cursor.execute("DELETE FROM courseselection WHERE selectioncourse = %s", (course_to_delete,))
+#             conn.commit()
+#         elif 'add' in request.form:
+#             course_to_add = request.form['add']
+#             cursor.execute("INSERT INTO courseselection (selectioncourse) VALUES (%s)", (course_to_add,))
+#             conn.commit()
+#         return redirect(url_for('confirmation'))
+#     else:
+#         cursor.execute("SELECT selectioncourse FROM courseselection")
+#         selected_courses = cursor.fetchall()
+#         total_cost = 0
+#         for course_name in selected_courses:
+#             cursor.execute("SELECT coursecost FROM courses WHERE coursename = %s", (course_name[0],))
+#             cost = cursor.fetchone()
+#             if cost:
+#                 total_cost += cost[0]
+#         return render_template('confirmation.html', selected_courses=selected_courses, total_cost=total_cost)
+
 @app.route('/confirmation', methods=['GET', 'POST'])
 def confirmation():
+    if 'username' not in session:
+        flash('Please login to view your course confirmation.', 'error')
+        return redirect(url_for('login'))
+
+    username = session['username']
     cursor = conn.cursor()
+
+    # Retrieve user ID based on the username stored in session
+    cursor.execute("SELECT idusers FROM users WHERE username = %s", (username,))
+    user_id_result = cursor.fetchone()
+    
+    # If user is not found, redirect to login
+    if not user_id_result:
+        flash('User not found. Please login again.', 'error')
+        return redirect(url_for('login'))
+    
+    user_id = user_id_result[0]
+
     if request.method == 'POST':
         if 'delete' in request.form:
             course_to_delete = request.form['delete']
-            cursor.execute("DELETE FROM courseselection WHERE selectioncourse = %s", (course_to_delete,))
+            # Ensure that the course being deleted belongs to the logged-in user
+            cursor.execute("DELETE FROM courseselection WHERE selectioncourse = %s AND user_id = %s", (course_to_delete, user_id))
             conn.commit()
         elif 'add' in request.form:
             course_to_add = request.form['add']
-            cursor.execute("INSERT INTO courseselection (selectioncourse) VALUES (%s)", (course_to_add,))
+            # Insert the new course with the user_id of the logged-in user
+            cursor.execute("INSERT INTO courseselection (selectioncourse, user_id) VALUES (%s, %s)", (course_to_add, user_id))
             conn.commit()
         return redirect(url_for('confirmation'))
     else:
-        cursor.execute("SELECT selectioncourse FROM courseselection")
+        # Select only the courses that the logged-in user has enrolled in
+        cursor.execute("SELECT selectioncourse FROM courseselection WHERE user_id = %s", (user_id,))
         selected_courses = cursor.fetchall()
+
         total_cost = 0
         for course_name in selected_courses:
             cursor.execute("SELECT coursecost FROM courses WHERE coursename = %s", (course_name[0],))
             cost = cursor.fetchone()
             if cost:
                 total_cost += cost[0]
+
         return render_template('confirmation.html', selected_courses=selected_courses, total_cost=total_cost)
+
 
 if __name__=='__main__':
     app.run(debug=True)
