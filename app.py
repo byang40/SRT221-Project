@@ -40,7 +40,6 @@ def login():
         cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password,))
         user = cursor.fetchone()
         cursor.close()
-        conn.close()
         if user:
             session['username'] = username
             flash('You were successfully logged in.', 'success')
