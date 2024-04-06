@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Contacts</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Welcome to P1 Private School of Education</h1>
+    <h1><img src="{{ url_for('static', filename='p1_school_bg.jpg') }}" alt="Logo"></h1>
     <table>
         <th><a href="/">Home</a></th>
         <th><a href="/news">News</a></th>
