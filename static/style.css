@@ -10,7 +10,7 @@ body, html {
     color: #0066cc;
 }
 
-  img[alt="Logo"] {
+img[alt="Logo"] {
     width: 500px;
     height: 200px;
     display: block;

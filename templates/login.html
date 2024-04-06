@@ -15,7 +15,7 @@
         <th><a href="/profile">Profile</a></th>
         <th><a href="/contacts">Contacts</a></th>
     </table>
-
+    <!-- line 19-35 "flash" error messages if the message happens to be an error type -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}

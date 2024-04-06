@@ -19,6 +19,8 @@
             </tr>
         </thead>
     </table>
+    <!-- line 23-32 displays all news articles from MySQL, each of them would be a link so users can click on it to see more details. It shows the first 150 characters from each article. -->
+    <!-- if a user is logged in, it allows user to add a new article  -->
     <h2>News</h2>
     {% for article in articles %}
         <h2><a href="/article/{{ article.id }}">{{ article.title }}</a></h2>

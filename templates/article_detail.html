@@ -15,6 +15,7 @@
         <th><a href="/profile">Profile</a></th>
         <th><a href="/contacts">Contacts</a></th>
     </table>
+    <!-- line 23-33 displays all existing comments and comment date that are already stored in MySQL -->
     <h2>{{ article.title }}</h2>
     <p>Published on: {{ article.publication_date }}</p>
     <p>{{ article.content }}</p>
@@ -31,6 +32,7 @@
         <p>No comments yet.</p>
     {% endif %}
     
+    <!-- If user logins to the session, user can upload their own comments which will be stored in MySQL -->
     {% if 'username' in session %}
         <h3>Add a Comment</h3>
         <form action="" method="post">

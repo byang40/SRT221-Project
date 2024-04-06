@@ -16,7 +16,7 @@
         <th><a href="/contacts">Contacts</a></th>
     </table>
     <h2>Forgot Login</h2>
-
+    <!-- line 20-28 prompt error message if there are any -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}

@@ -8,6 +8,7 @@
 </head>
 <body>
     <h1><img src="{{ url_for('static', filename='p1_school_bg.jpg') }}" alt="Logo"></h1>
+    <!-- line 13-17 creates a link that redirects user to the corresponding page -->
     <table>
         <th><a href="/">Home</a></th>
         <th><a href="/news">News</a></th>
@@ -15,6 +16,7 @@
         <th><a href="/profile">Profile</a></th>
         <th><a href="/contacts">Contacts</a></th>
     </table>
+    <!-- below allows users to submit articles which will then be synced to the MySQL database -->
     <h2>Add a New Article</h2>
     <form action="/add_article" method="post">
         <label for="title">Title:</label><br>
