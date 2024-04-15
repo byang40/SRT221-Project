@@ -23,10 +23,11 @@
     <!-- if a user is logged in, it allows user to add a new article  -->
     <h2>News</h2>
     {% for article in articles %}
-        <h2><a href="/article/{{ article.id }}">{{ article.title }}</a></h2>
-        <p>Published on: {{ article.publication_date }}</p>
-        <!-- Truncate content for preview -->
-        <p>{{ article.content[:150] }}...</p>
+        <div class="news-item"><h2><a href="/article/{{ article.id }}">{{ article.title }}</a></h2>
+            <p>Published on: {{ article.publication_date }}</p>
+            <!-- Truncate content for preview -->
+            <p>{{ article.content[:150] }}...</p>
+        </div>
     {% endfor %}
 
     {% if logged_in_user %}
